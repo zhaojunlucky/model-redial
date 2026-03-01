@@ -33,15 +33,15 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy application file
-COPY netgear.py .
-
 # Install Python dependencies
 RUN pip install --no-cache-dir \
     requests \
     selenium \
     webdriver-manager \
     python-dotenv
+
+# Copy application file
+COPY netgear.py .
 
 # Set the command to run the script
 CMD ["python", "netgear.py"]
