@@ -3,7 +3,6 @@ import requests
 import os
 from dotenv import load_dotenv
 
-from webdriver_manager.chrome import ChromeDriverManager
 
 load_dotenv()
 
@@ -18,13 +17,24 @@ from selenium.webdriver.support import expected_conditions as EC
 
 def get_headless_driver():
     options = Options()
-    # options.add_argument('--headless')  # Commented out to enable full browser with JavaScript
+    headless = os.getenv("HEADLESS", "").strip().lower() not in {"0", "false", "no"}
+    if headless:
+        options.add_argument("--headless=new")
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument("--disable-gpu")
+    options.add_argument("--remote-debugging-port=9222")
     options.add_argument('--window-size=1920x1080')
     options.add_argument('--start-maximized')
     options.add_experimental_option('prefs', {'profile.managed_default_content_settings.javascript': 1})
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    options.binary_location = os.getenv("CHROME_BINARY", "/usr/bin/google-chrome")
+
+    use_webdriver_manager = os.getenv("USE_WEBDRIVER_MANAGER", "").strip().lower() in {"1", "true", "yes"}
+    if use_webdriver_manager:
+        from webdriver_manager.chrome import ChromeDriverManager
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    else:
+        driver = webdriver.Chrome(options=options)
     return driver
 
 browser = get_headless_driver()
